@@ -12,10 +12,19 @@ async function fetchRound(round) {
   const url = `https://www.dhlottery.co.kr/wnprchsplcsrch/selectLtWnShp.do?srchWnShpRnk=all&srchLtEpsd=${round}`;
 
   const { data } = await axios.get(url);
-
   const list = data.data.list;
 
-  console.log(`${round}회: ${list.length}개 판매점 발견`);
+  if (!data?.data?.list) {
+    console.warn(`${round}회: 데이터 없음`);
+    return;
+  }
+
+  if (list.length === 0) {
+    console.log(`${round}회: 당첨 판매점 없음`);
+    return;
+  }
+
+  console.log(`${round}회: ${list.length}개`);
 
   const draw = await prisma.draw.upsert({
     where: { round },
@@ -57,10 +66,19 @@ async function fetchRound(round) {
       },
     });
   }
-
-  console.log("저장 완료");
 }
 
-fetchRound(1210)
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+async function main() {
+  const start = 1;
+  const end = 1213; // 나중에 최신회차로 수정..?
+
+  for (let i = start; i <= end; i++) {
+    try {
+      await fetchRound(i);
+    } catch (err) {
+      console.error(`${i}회 실패`, err.message);
+    }
+  }
+}
+
+main().finally(() => prisma.$disconnect());

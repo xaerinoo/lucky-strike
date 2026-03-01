@@ -19,7 +19,7 @@ model Draw {
 model Store {
   id          Int      @id @default(autoincrement())
   ltShpId     String   @unique  // 동행복권 판매점 교유 ID
-  name        String
+  name        String? // name을 optional로 변경 (데이터 수집 시 폐업 등으로 이름이 없는 경우가 있음)
   phone       String?
   address     String
   region1     String
