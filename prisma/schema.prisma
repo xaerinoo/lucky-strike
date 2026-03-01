@@ -7,24 +7,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Store {
-  id        BigInt   @id @default(autoincrement())
-  ltShpId   String   @unique
-  name      String
-  address   String
-  region1   String
-  region2   String
-  lat       Float
-  lng       Float
-  wins      Win[]
+model Draw {
+  id        Int      @id @default(autoincrement())
+  round     Int      @unique  // 회차 번호
+  drawDate  DateTime?
   createdAt DateTime @default(now())
+
+  wins      WinHistory[]
 }
 
-model Win {
-  id        BigInt   @id @default(autoincrement())
-  storeId   BigInt
-  round     Int
-  rank      Int
-  store     Store    @relation(fields: [storeId], references: [id])
-  createdAt DateTime @default(now())
+model Store {
+  id          Int      @id @default(autoincrement())
+  ltShpId     String   @unique  // 동행복권 판매점 교유 ID
+  name        String
+  phone       String?
+  address     String
+  region1     String
+  region2     String?
+  region3     String?
+  latitude    Float
+  longitude   Float
+  createdAt   DateTime @default(now())
+
+  wins        WinHistory[]
+}
+
+model WinHistory {
+  id         Int      @id @default(autoincrement())
+  rank       Int      // 1등/2등
+  autoManual String?  // 자동/수동
+  createdAt  DateTime @default(now())
+
+  drawId     Int
+  storeId    Int
+
+  draw       Draw     @relation(fields: [drawId], references: [id])
+  store      Store    @relation(fields: [storeId], references: [id])
+
+  @@unique([drawId, storeId, rank]) // 같은 회차에 같은 판매점 같은 등수 중복 저장 방지
 }
